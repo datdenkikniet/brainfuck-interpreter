@@ -37,8 +37,8 @@ pub enum BrainfuckInstruction {
     JumpBackwards(usize),
 }
 
-/// An instruction, and its associated position
-/// in the input code
+/// An instruction, its position in a piece of source code,
+/// and its position in said source code
 #[derive(Clone, Debug)]
 pub struct Span<'a> {
     instruction: BrainfuckInstruction,
@@ -81,12 +81,13 @@ impl<'a> Display for Span<'a> {
 }
 
 impl<'a> Span<'a> {
-    /// Get the full text of this span
+    /// Get the full source code in which this span
+    /// is located
     pub fn get_text(&self) -> &str {
         self.text
     }
     /// Get the line number and character index of the character
-    /// that this span describes
+    /// where this span is located
     pub fn get_line_character_number(&self) -> (&usize, &usize) {
         (&self.line, &self.character)
     }
