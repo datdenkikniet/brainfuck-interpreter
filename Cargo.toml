@@ -11,6 +11,9 @@ impls = []
 
 [dependencies]
 
+[dev-dependencies.number_prefix]
+version = "0.4"
+
 [[example]]
 name = "hello-world"
 default-features = true

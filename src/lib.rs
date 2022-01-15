@@ -107,6 +107,8 @@ where
     pub instructions: Vec<BrainfuckInstruction>,
     /// The tape of this program
     pub tape: T,
+    /// The amount of instructions that have been executed
+    pub execution_count: usize,
 }
 
 /// An error that can occur while interpreting/compiling Brainfuck
@@ -246,6 +248,7 @@ where
                 .map(|span| span.instruction.clone())
                 .collect(),
             tape,
+            execution_count: 0,
         })
     }
 
@@ -262,6 +265,8 @@ where
             Some(data) => data,
             None => panic!("Data pointer went out of bounds! {}", data_pointer),
         };
+
+        self.execution_count += 1;
 
         let instructions = &self.instructions;
 
