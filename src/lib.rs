@@ -61,14 +61,12 @@ impl<'a> Display for Span<'a> {
         }
         arrow.push('^');
 
-        let mut index = 0;
         let mut text_line = None;
-        for line in self.text.lines() {
+        for (index, line) in self.text.lines().enumerate() {
             if index == self.line {
                 text_line = Some(line);
                 break;
             }
-            index += 1;
         }
 
         let text_line = match text_line {
@@ -163,7 +161,7 @@ where
     /// Find matching `[` for a `]` located at `index` in `instructions`
     ///
     /// Returns the offset required for the jump on success, and else an error
-    fn find_closer<'a>(index: usize, instructions: &Vec<Span<'a>>) -> Result<usize, Error<'a>> {
+    fn find_closer<'a>(index: usize, instructions: &[Span<'a>]) -> Result<usize, Error<'a>> {
         let mut calculated_offset = 0;
         let mut extra_openers = 0;
         let iterator = instructions.iter().skip(index + 1);
@@ -193,7 +191,7 @@ where
     /// Find matching `]` for a `[` located at `index` in `instructions`
     ///
     /// Returns the offset required for the jump on success, and else an error
-    fn find_opener<'a>(index: usize, instructions: &Vec<Span<'a>>) -> Result<usize, Error<'a>> {
+    fn find_opener<'a>(index: usize, instructions: &[Span<'a>]) -> Result<usize, Error<'a>> {
         let mut calculated_offset = 0;
         let mut extra_closers = 0;
         let iterator = instructions.iter().rev().skip(instructions.len() - index);
@@ -225,9 +223,8 @@ where
         let mut parse_result = Self::parse_input(input)?;
 
         let clone = parse_result.clone();
-        let mut index = 0;
 
-        for span in parse_result.iter_mut() {
+        for (index, span) in parse_result.iter_mut().enumerate() {
             match &mut span.instruction {
                 BrainfuckInstruction::JumpForward(offset) => {
                     *offset = Self::find_closer(index, &clone)?;
@@ -237,23 +234,19 @@ where
                 }
                 _ => {}
             }
-            index += 1;
         }
 
         Ok(Self {
             instruction_pointer: 0,
             data_pointer: 0,
-            instructions: parse_result
-                .iter()
-                .map(|span| span.instruction.clone())
-                .collect(),
+            instructions: parse_result.iter().map(|span| span.instruction).collect(),
             tape,
             execution_count: 0,
         })
     }
 
     /// Perform a step in the Brainfuck program
-    pub fn step<FnOut, FnIn>(&mut self, output: &mut FnOut, input: &mut FnIn) -> Result<(), ()>
+    pub fn step<FnOut, FnIn>(&mut self, output: &mut FnOut, input: &mut FnIn) -> bool
     where
         FnOut: FnMut(T::Data),
         FnIn: FnMut() -> T::Data,
@@ -272,7 +265,7 @@ where
 
         let instruction = match instructions.get(*instruction_pointer) {
             Some(instr) => instr,
-            None => return Err(()),
+            None => return false,
         };
 
         match instruction {
@@ -297,18 +290,18 @@ where
             BrainfuckInstruction::JumpForward(offset) => {
                 if *data == T::Data::zero() {
                     *instruction_pointer += offset;
-                    return Ok(());
+                    return true;
                 }
             }
             BrainfuckInstruction::JumpBackwards(offset) => {
                 if *data != T::Data::zero() {
                     *instruction_pointer -= offset;
-                    return Ok(());
+                    return true;
                 }
             }
         }
         *instruction_pointer += 1;
-        Ok(())
+        true
     }
 
     /// Reset the program
@@ -324,6 +317,6 @@ where
         FnOut: FnMut(T::Data),
         FnIn: FnMut() -> T::Data,
     {
-        while self.step(output, input).is_ok() {}
+        while self.step(output, input) {}
     }
 }

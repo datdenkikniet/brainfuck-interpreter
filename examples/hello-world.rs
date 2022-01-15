@@ -1,5 +1,5 @@
 use std::{
-    io::{stdout, Read, Write},
+    io::{Read, Write},
     time::SystemTime,
 };
 
@@ -7,7 +7,7 @@ use brainfuck_interpreter::{BrainfuckProgram, Error};
 use number_prefix::NumberPrefix;
 
 fn main() {
-    let program = r#"+[>+]"#;
+    let program = r#"++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>."#;
 
     let tape = [0u8; 1_000_000];
 
